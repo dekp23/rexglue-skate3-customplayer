@@ -15,6 +15,7 @@
 
 #include <rex/audio/xma/context.h>
 #include <rex/audio/xma/decoder.h>
+#include <rex/audio/xma/frame_filter.h>
 #include <rex/audio/xma/helpers.h>
 #include <rex/cvar.h>
 #include <rex/dbg.h>
@@ -96,6 +97,21 @@ int XmaContext::Setup(uint32_t id, memory::Memory* memory, uint32_t guest_ptr) {
 
   // FYI: We're purposely not opening the codec here. That is done later.
   return 0;
+}
+
+namespace {
+// Filters are never freed: a decode in flight on the worker thread may still hold
+// the previous pointer when it is replaced.
+std::atomic<const XmaFrameFilter*> g_xma_frame_filter{nullptr};
+}  // namespace
+
+void SetXmaFrameFilter(const XmaFrameFilter* filter) {
+  g_xma_frame_filter.store(filter ? new XmaFrameFilter(*filter) : nullptr,
+                           std::memory_order_release);
+}
+
+const XmaFrameFilter* GetXmaFrameFilter() {
+  return g_xma_frame_filter.load(std::memory_order_acquire);
 }
 
 bool XmaContext::Work() {
@@ -210,6 +226,9 @@ void XmaContext::ClearLocked(XMA_CONTEXT_DATA* data) {
   if (av_context_ && avcodec_is_open(av_context_)) {
     avcodec_flush_buffers(av_context_);
   }
+  if (const auto* filter = GetXmaFrameFilter(); filter && filter->on_context_reset) {
+    filter->on_context_reset(filter->user, id());
+  }
 
   data->input_buffer_0_valid = 0;
   data->input_buffer_1_valid = 0;
@@ -245,6 +264,9 @@ void XmaContext::Release() {
   assert_true(is_allocated());
 
   set_is_allocated(false);
+  if (const auto* filter = GetXmaFrameFilter(); filter && filter->on_context_reset) {
+    filter->on_context_reset(filter->user, id());
+  }
   auto context_ptr = memory()->TranslateVirtual(guest_ptr());
   std::memset(context_ptr, 0, sizeof(XMA_CONTEXT_DATA));
 }
@@ -1254,6 +1276,10 @@ void XmaContext::DecodeOldFrame(XMA_CONTEXT_DATA* data) {
 
     ConvertFrame(reinterpret_cast<const uint8_t**>(&av_frame_->data), bool(data->is_stereo),
                  raw_frame_.data());
+    if (const auto* filter = GetXmaFrameFilter(); filter && filter->on_frame && packet) {
+      filter->on_frame(filter->user, id(), packet, frame_idx, data->is_stereo ? 2u : 1u,
+                       raw_frame_.data());
+    }
 
     output_rb.Write(raw_frame_.data(), frame_byte_count);
     output_remaining_bytes -= frame_byte_count;
