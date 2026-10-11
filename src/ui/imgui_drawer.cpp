@@ -387,7 +387,9 @@ void ImGuiDrawer::SetupFonts() {
     // DirectWrite white-on-black edge
     // profiles (identity was measurably thinner/dimmer). The *_on_light_
     // variants below keep gamma 1.0 - dark-on-light needs no correction.
+#ifdef REXGLUE_IMGUI_HAS_RASTERIZER_GAMMA  // needs the unpublished rexglue imgui patch
     config.RasterizerGamma = 0.62f;
+#endif
     config.FontLoaderFlags = ImGuiFreeTypeBuilderFlags_NoHinting;
     ui_font_ = io.Fonts->AddFontFromMemoryCompressedBase85TTF(
         GetInterRegularCompressedBase85(), 18.0f, &config);
@@ -408,7 +410,9 @@ void ImGuiDrawer::SetupFonts() {
     config_on_light.RasterizerMultiply = 1.0f;
     // Dark-on-light matches the browser with NO coverage curve (harness fit:
     // identity beat every contrast/gamma variant once bake==draw size).
+#ifdef REXGLUE_IMGUI_HAS_RASTERIZER_GAMMA
     config_on_light.RasterizerGamma = 1.0f;
+#endif
     ui_font_on_light_ = io.Fonts->AddFontFromMemoryCompressedBase85TTF(
         GetInterRegularCompressedBase85(), 18.0f, &config_on_light);
     ui_font_semibold_on_light_ = io.Fonts->AddFontFromMemoryCompressedBase85TTF(
