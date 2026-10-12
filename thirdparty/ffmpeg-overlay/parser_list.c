@@ -1,5 +1,8 @@
-static const AVCodecParser* const parser_list[] = {
-#if CONFIG_MPEGAUDIO_PARSER
+static const AVCodecParser * const parser_list[] = {
+    &ff_aac_parser,
+    &ff_aac_latm_parser,
+    &ff_flac_parser,
     &ff_mpegaudio_parser,
-#endif
-    NULL};
+    &ff_opus_parser,
+    &ff_vorbis_parser,
+    NULL };

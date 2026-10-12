@@ -721,3 +721,6 @@ endif()
 
 # IDE folder organization
 set_target_properties(libavutil libavcodec PROPERTIES FOLDER "FFmpeg")
+
+# Extra decoders/demuxers + libavformat/libswresample (dekp23 custom music).
+include(${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg-overlay/extra_components.cmake)

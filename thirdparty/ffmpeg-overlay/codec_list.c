@@ -1,17 +1,26 @@
-static const AVCodec* const codec_list[] = {
-#if CONFIG_MP3FLOAT_DECODER
+static const AVCodec * const codec_list[] = {
+    &ff_aac_decoder,
+    &ff_aac_latm_decoder,
+    &ff_alac_decoder,
+    &ff_flac_decoder,
+    &ff_mp2_decoder,
+    &ff_mp2float_decoder,
     &ff_mp3float_decoder,
-#endif
-#if CONFIG_MP3_DECODER
     &ff_mp3_decoder,
-#endif
-#if CONFIG_WMAPRO_DECODER
+    &ff_opus_decoder,
+    &ff_vorbis_decoder,
     &ff_wmapro_decoder,
-#endif
-#if CONFIG_WMAV2_DECODER
+    &ff_wmav1_decoder,
     &ff_wmav2_decoder,
-#endif
-#if CONFIG_XMAFRAMES_DECODER
     &ff_xmaframes_decoder,
-#endif
-    NULL};
+    &ff_pcm_alaw_decoder,
+    &ff_pcm_f32le_decoder,
+    &ff_pcm_f64le_decoder,
+    &ff_pcm_mulaw_decoder,
+    &ff_pcm_s16be_decoder,
+    &ff_pcm_s16le_decoder,
+    &ff_pcm_s24be_decoder,
+    &ff_pcm_s24le_decoder,
+    &ff_pcm_s32le_decoder,
+    &ff_pcm_u8_decoder,
+    NULL };

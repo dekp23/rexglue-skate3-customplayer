@@ -14,7 +14,7 @@ set(REXGLUE_INSTALL_TARGETS
     rexruntime
     disruptorplus renderdoc simde tomlplusplus
     aes128 mspack o1heap disasm xxhash
-    libavcodec libavutil
+    libavformat libavcodec libswresample libavutil
     rexglue
 )
 

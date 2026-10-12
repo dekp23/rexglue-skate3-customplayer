@@ -9,6 +9,7 @@ add_library(rexaudio OBJECT
     xma_decoder.cpp
     xma_register_file.cpp
     xma_stream_decoder.cpp
+    audio_file_decoder.cpp
     # NOP backend (always available)
     nop/nop_audio_system.cpp
     # SDL backend
@@ -24,5 +25,5 @@ target_include_directories(rexaudio PUBLIC
 
 target_link_libraries(rexaudio
     PUBLIC rexcore SDL3::SDL3
-    PRIVATE libavcodec libavutil
+    PRIVATE libavformat libavcodec libswresample libavutil
 )
