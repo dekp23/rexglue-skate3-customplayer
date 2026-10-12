@@ -21,6 +21,14 @@ foreach(_f demuxer_list.c muxer_list.c protocol_list.c)
   configure_file("${FFMPEG_EXTRA_OVERLAY_SRC}/${_f}" "${FFMPEG_OVERLAY_BUILD_DIR}/libavformat/${_f}" COPYONLY)
 endforeach()
 
+# Objects built before this overlay existed depend on the original config.h only, so a
+# header-based rebuild would not happen: a new compile definition forces every FFmpeg object
+# to be rebuilt with the overlay config (bump the value when config_overrides.h changes).
+set(FFMPEG_EXTRA_CONFIG_REV 1)
+foreach(_t libavutil libavcodec)
+  target_compile_definitions(${_t} PRIVATE REX_FFMPEG_EXTRA_CONFIG=${FFMPEG_EXTRA_CONFIG_REV})
+endforeach()
+
 target_include_directories(libavutil BEFORE PRIVATE "${FFMPEG_OVERLAY_BUILD_DIR}")
 target_sources(libavutil PRIVATE
     ${FFMPEG_DIR}/libavutil/lzo.c
@@ -183,7 +191,8 @@ foreach(_t libswresample libavformat)
   target_include_directories(${_t}
       PUBLIC $<BUILD_INTERFACE:${FFMPEG_DIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
       PRIVATE ${FFMPEG_ATOMICS_INCLUDE})
-  target_compile_definitions(${_t} PRIVATE ${FFMPEG_COMMON_DEFINES})
+  target_compile_definitions(${_t} PRIVATE ${FFMPEG_COMMON_DEFINES}
+                             REX_FFMPEG_EXTRA_CONFIG=${FFMPEG_EXTRA_CONFIG_REV})
   target_compile_options(${_t} PRIVATE -w)
   set_target_properties(${_t} PROPERTIES FOLDER "FFmpeg")
 endforeach()
